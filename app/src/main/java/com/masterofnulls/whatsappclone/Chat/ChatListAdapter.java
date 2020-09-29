@@ -43,9 +43,9 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ChatActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("chatID", chatList.get(holder.getAdapterPosition()).getChatId());
-                intent.putExtras(bundle);
+
+                intent.putExtra("chat", chatList.get(holder.getAdapterPosition()));
+
                 view.getContext().startActivity(intent);
             }
         });

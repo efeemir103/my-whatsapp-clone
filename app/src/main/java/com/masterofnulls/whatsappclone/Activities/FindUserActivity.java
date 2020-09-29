@@ -9,7 +9,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
+import android.view.View;
+import android.widget.Button;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,6 +24,7 @@ import com.masterofnulls.whatsappclone.User.User;
 import com.masterofnulls.whatsappclone.User.UserListAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FindUserActivity extends AppCompatActivity {
 
@@ -42,8 +46,42 @@ public class FindUserActivity extends AppCompatActivity {
         contactList = new ArrayList<>();
         userList = new ArrayList<>();
 
+        Button mCreate = findViewById(R.id.create);
+        mCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createChat();
+            }
+        });
+
         initializeRecyclerView();
         getContactList();
+    }
+
+    private  void createChat() {
+        String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+
+        DatabaseReference chatInfoDB = FirebaseDatabase.getInstance().getReference().child("chat").child(key).child("info");
+        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
+
+        HashMap<String, Object> newChatMap = new HashMap();
+        newChatMap.put("id", key);
+        newChatMap.put("users/" + FirebaseAuth.getInstance().getUid(), true);
+
+        boolean validChat = false;
+
+        for(User user: userList) {
+            if(user.getSelected()) {
+                validChat = true;
+                newChatMap.put("users/" + user.getUid(), true);
+                userDB.child(user.getUid()).child("chat").child(key).setValue(true);
+            }
+        }
+
+        if(validChat) {
+            chatInfoDB.updateChildren(newChatMap);
+            userDB.child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
+        }
     }
 
     private void getContactList() {

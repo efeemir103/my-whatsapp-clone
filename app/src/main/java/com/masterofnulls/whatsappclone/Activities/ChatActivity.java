@@ -23,10 +23,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.masterofnulls.whatsappclone.Chat.Chat;
 import com.masterofnulls.whatsappclone.Media.MediaListAdapter;
 import com.masterofnulls.whatsappclone.Message.Message;
 import com.masterofnulls.whatsappclone.Message.MessageListAdapter;
 import com.masterofnulls.whatsappclone.R;
+import com.masterofnulls.whatsappclone.User.User;
+import com.masterofnulls.whatsappclone.Utils.SendNotification;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,18 +45,18 @@ public class ChatActivity extends AppCompatActivity {
 
     ArrayList<Message> messageList;
 
-    String chatID;
+    Chat chat;
 
-    DatabaseReference mChatDB;
+    DatabaseReference chatMessagesDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        chatID = getIntent().getExtras().getString("chatID");
+        chat = (Chat) getIntent().getSerializableExtra("chat");
 
-        mChatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
+        chatMessagesDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chat.getChatId()).child("messages");
 
         messageList = new ArrayList<>();
 
@@ -81,7 +84,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void getChatMessages() {
-        mChatDB.addChildEventListener(new ChildEventListener() {
+        chatMessagesDB.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 if(snapshot.exists()) {
@@ -150,8 +153,8 @@ public class ChatActivity extends AppCompatActivity {
     int mediaUploadIndex = 0;
     ArrayList<String> mediaUploadIDList = new ArrayList<>();
     private void sendMessage() {
-        String messageId = mChatDB.push().getKey();
-        final DatabaseReference newMessageDB = mChatDB.push();
+        String messageId = chatMessagesDB.push().getKey();
+        final DatabaseReference newMessageDB = chatMessagesDB.push();
 
         final Map<String, Object> newMessageMap = new HashMap<>();
 
@@ -165,7 +168,7 @@ public class ChatActivity extends AppCompatActivity {
             for(String mediaURI: mediaURIList) {
                 String mediaID = newMessageDB.child("media").push().getKey();
                 mediaUploadIDList.add(mediaID);
-                final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(messageId).child(mediaID);
+                final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(chat.getChatId()).child(messageId).child(mediaID);
 
                 UploadTask uploadTask = filePath.putFile(Uri.parse(mediaURI));
 
@@ -199,6 +202,20 @@ public class ChatActivity extends AppCompatActivity {
         mediaUploadIDList.clear();
         mediaUploadIndex = 0;
         mMediaListAdapter.notifyDataSetChanged();
+
+        String message;
+
+        if(newMessageMap.get("text") != null) {
+            message = (String) newMessageMap.get("text");
+        } else {
+            message = "\uD83D\uDDBC Sent Media \uD83D\uDDBC️";
+        }
+
+        for(User user: chat.getUsers()) {
+            if(!user.getUid().equals(FirebaseAuth.getInstance().getUid())) {
+                SendNotification.send(message, "New Message", user.getNotificationKey());
+            }
+        }
     }
 
     private void openGallery() {
