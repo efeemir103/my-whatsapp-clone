@@ -9,17 +9,17 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter Phone Number"
+        android:hint="@string/enter_phone_number"
         android:id="@+id/phoneNumber"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter Code"
+        android:hint="@string/enter_code"
         android:id="@+id/code"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send Verification Code"
+        android:text="@string/send_verification_code"
         android:id="@+id/send"
         />
 </LinearLayout>

@@ -58,7 +58,7 @@ public class FindUserActivity extends AppCompatActivity {
         getContactList();
     }
 
-    private  void createChat() {
+    private void createChat() {
         String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
 
         DatabaseReference chatInfoDB = FirebaseDatabase.getInstance().getReference().child("chat").child(key).child("info");

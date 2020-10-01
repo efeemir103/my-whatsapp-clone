@@ -6,5 +6,6 @@
         android:layout_width="wrap_content"
         android:layout_height="100sp"
         android:id="@+id/media"
-        android:src="@mipmap/ic_launcher"/>
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="@string/media_desc" />
 </LinearLayout>

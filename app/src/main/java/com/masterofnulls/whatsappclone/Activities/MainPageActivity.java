@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,7 +24,9 @@ import com.masterofnulls.whatsappclone.Chat.Chat;
 import com.masterofnulls.whatsappclone.Chat.ChatListAdapter;
 import com.masterofnulls.whatsappclone.R;
 import com.masterofnulls.whatsappclone.User.User;
-import com.masterofnulls.whatsappclone.Utils.SendNotification;
+
+import com.masterofnulls.whatsappclone.Utils.CompleteListener;
+import com.masterofnulls.whatsappclone.Utils.ContactsManager;
 import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
@@ -56,7 +59,7 @@ public class MainPageActivity extends AppCompatActivity {
         chatList = new ArrayList<>();
 
         Button mLogout = findViewById(R.id.logout);
-        Button mFindUser = findViewById(R.id.findUser);
+        FloatingActionButton mFindUser = findViewById(R.id.findUser);
 
         mFindUser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,7 +82,12 @@ public class MainPageActivity extends AppCompatActivity {
 
         getPermissions();
         initializeRecyclerView();
-        getUserChatList();
+        ContactsManager.setOnCompleteListener(new CompleteListener() {
+            @Override
+            public void onSuccess() {
+                getUserChatList();
+            }
+        });
     }
 
     private void getUserChatList() {
@@ -96,12 +104,16 @@ public class MainPageActivity extends AppCompatActivity {
                         for(Chat chatIterator: chatList) {
                             if(chatIterator.getChatId().equals(mChat.getChatId())) {
                                 exists = true;
+                                break;
                             }
                         }
                         if(!exists) {
                             chatList.add(mChat);
-                            getChatData(mChat.getChatId());
                         }
+                    }
+
+                    for(Chat chat: chatList) {
+                        getChatData(chat.getChatId());
                     }
                 }
             }
@@ -129,9 +141,15 @@ public class MainPageActivity extends AppCompatActivity {
                     for(DataSnapshot userSnapshot: snapshot.child("users").getChildren()) {
                         for(Chat chat: chatList) {
                             if(chat.getChatId().equals(chatId)) {
-                                User user = new User(userSnapshot.getKey());
-                                chat.addUser(user);
-                                getUserData(user);
+                                chat.addUser(new User(userSnapshot.getKey(), "", ""));
+                            }
+                        }
+                    }
+
+                    for(Chat chat: chatList) {
+                        if(chat.getChatId().equals(chatId)) {
+                            for(User user: chat.getUsers()) {
+                                getUserData(user.getUid());
                             }
                         }
                     }
@@ -145,13 +163,13 @@ public class MainPageActivity extends AppCompatActivity {
         });
     }
 
-    private void getUserData(User user) {
-        DatabaseReference mUserDB = FirebaseDatabase.getInstance().getReference().child("user").child(user.getUid());
+    private void getUserData(String uid) {
+        DatabaseReference mUserDB = FirebaseDatabase.getInstance().getReference().child("user").child(uid);
         mUserDB.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists()) {
-                    User user = new User(snapshot.getKey());
+                    User user = ContactsManager.getContactWithID(snapshot.getKey(), new User(snapshot.getKey(), "", snapshot.child("phone").getValue().toString()));
 
                     if(snapshot.child("notificationKey").getValue() != null) {
                         user.setNotificationKey(snapshot.child("notificationKey").getValue().toString());
@@ -187,5 +205,11 @@ public class MainPageActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS}, 1);
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        ContactsManager.getContactList(this);
     }
 }

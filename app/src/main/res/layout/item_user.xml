@@ -13,12 +13,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="contact"
+            android:text="@string/contact"
             android:id="@+id/name"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="phone"
+            android:text="@string/phone"
             android:id="@+id/phone"/>
     </LinearLayout>
     <View

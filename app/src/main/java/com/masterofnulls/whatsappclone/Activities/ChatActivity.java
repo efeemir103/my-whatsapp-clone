@@ -10,8 +10,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -60,8 +60,8 @@ public class ChatActivity extends AppCompatActivity {
 
         messageList = new ArrayList<>();
 
-        Button mSend = findViewById(R.id.send);
-        Button mAddMedia = findViewById(R.id.addMedia);
+        ImageButton mSend = findViewById(R.id.send);
+        ImageButton mAddMedia = findViewById(R.id.addMedia);
 
         mMessage = findViewById(R.id.message);
 
@@ -78,6 +78,8 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        setTitle(chat.getChatName());
+
         initializeMessage();
         initializeMedia();
         getChatMessages();
@@ -88,7 +90,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 if(snapshot.exists()) {
-                    String text = "", creatorID = "";
+                    String text = "", creatorID = "", creatorName = "";
 
                     ArrayList<String> mediaURLList = new ArrayList<>();
 
@@ -133,7 +135,7 @@ public class ChatActivity extends AppCompatActivity {
         mMessageList.setHasFixedSize(false);
         mMessageListLayoutManager = new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false);
         mMessageList.setLayoutManager(mMessageListLayoutManager);
-        mMessageListAdapter = new MessageListAdapter(messageList);
+        mMessageListAdapter = new MessageListAdapter(messageList, chat.getUsers());
         mMessageList.setAdapter(mMessageListAdapter);
     }
 

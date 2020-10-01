@@ -1,7 +1,6 @@
 package com.masterofnulls.whatsappclone.Chat;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.masterofnulls.whatsappclone.Activities.ChatActivity;
 import com.masterofnulls.whatsappclone.R;
+import com.masterofnulls.whatsappclone.User.User;
 
 import java.util.ArrayList;
 
@@ -36,7 +37,29 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
 
     @Override
     public void onBindViewHolder(@NonNull final ChatListViewHolder holder, final int position) {
-        holder.mTitle.setText(chatList.get(position).getChatId());
+        ArrayList<User> users = chatList.get(position).getUsers();
+        if(users != null) {
+            ArrayList<String> userNames = new ArrayList<>();
+            for(User user: users) {
+                if(!user.getUid().equals(FirebaseAuth.getInstance().getUid())) {
+                    userNames.add(user.getName());
+                }
+            }
+            if(userNames.size() <= 1) {
+                chatList.get(0).setChatName(userNames.get(0));
+                holder.mTitle.setText(userNames.get(0));
+            } else {
+                StringBuilder title = new StringBuilder("Chat Room with ");
+                for(int i = 0; i < userNames.size() - 2; i++) {
+                    title.append(userNames.get(i)).append(", ");
+                }
+                title.append(userNames.get(userNames.size() - 2)).append(" and ").append(userNames.get(userNames.size() - 1));
+                chatList.get(position).setChatName(title.toString());
+                holder.mTitle.setText(title.toString());
+            }
+        } else {
+            holder.mTitle.setText(chatList.get(position).getChatId());
+        }
 
         holder.mLayout.setOnClickListener(new View.OnClickListener() {
 
