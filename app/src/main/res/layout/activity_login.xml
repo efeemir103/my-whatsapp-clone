@@ -5,7 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.LoginActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/rounded_verification_form_bg"
+    android:layout_marginHorizontal="50dp"
+    android:layout_marginTop="100dp"
+    android:layout_marginBottom="400dp">
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,5 +26,7 @@
         android:layout_height="wrap_content"
         android:text="@string/send_verification_code"
         android:id="@+id/send"
-        />
+        android:background="@drawable/rounded_verification_form_button_bg"
+        android:layout_margin="4dp"
+        android:padding="2dp"/>
 </LinearLayout>
