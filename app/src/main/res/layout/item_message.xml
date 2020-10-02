@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="4dp">
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:id="@+id/messageLeftMargin"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/rounded_message_bg"
+        android:paddingHorizontal="5dp"
+        android:paddingVertical="5dp"
         android:orientation="vertical">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -24,19 +33,16 @@
                 android:id="@+id/senderPhone"
                 android:textColor="#AFAFAF"/>
         </LinearLayout>
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:id="@+id/viewMedia"
+            android:contentDescription="@string/media"
+            fresco:placeholderImage="@drawable/ic_photo_24px"
+            fresco:placeholderImageScaleType="fitCenter"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/message"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#000000"/>
     </LinearLayout>
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/viewMedia"
-        app:srcCompat="@drawable/ic_photo_24px"
-        android:contentDescription="@+id/viewMedia"/>
 </LinearLayout>

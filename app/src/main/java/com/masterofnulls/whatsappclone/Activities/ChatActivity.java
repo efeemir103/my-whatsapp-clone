@@ -135,7 +135,7 @@ public class ChatActivity extends AppCompatActivity {
         mMessageList.setHasFixedSize(false);
         mMessageListLayoutManager = new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false);
         mMessageList.setLayoutManager(mMessageListLayoutManager);
-        mMessageListAdapter = new MessageListAdapter(messageList, chat.getUsers());
+        mMessageListAdapter = new MessageListAdapter(getApplicationContext(), messageList, chat.getUsers());
         mMessageList.setAdapter(mMessageListAdapter);
     }
 

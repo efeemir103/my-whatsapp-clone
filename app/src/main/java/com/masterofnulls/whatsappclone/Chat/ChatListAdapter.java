@@ -1,6 +1,8 @@
 package com.masterofnulls.whatsappclone.Chat;
 
+import android.content.Context;
 import android.content.Intent;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.masterofnulls.whatsappclone.Activities.ChatActivity;
 import com.masterofnulls.whatsappclone.R;
@@ -19,8 +22,10 @@ import java.util.ArrayList;
 
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder> {
     ArrayList<Chat> chatList;
+    Context context;
 
-    public ChatListAdapter(ArrayList<Chat> chatList) {
+    public ChatListAdapter(Context context, ArrayList<Chat> chatList) {
+        this.context = context;
         this.chatList = chatList;
     }
 
@@ -42,7 +47,11 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
             ArrayList<String> userNames = new ArrayList<>();
             for(User user: users) {
                 if(!user.getUid().equals(FirebaseAuth.getInstance().getUid())) {
-                    userNames.add(user.getName());
+                    if(user.getName().isEmpty()) {
+                        userNames.add(user.getPhone());
+                    } else {
+                        userNames.add(user.getName());
+                    }
                 }
             }
             if(userNames.size() <= 1) {
@@ -59,6 +68,11 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
             }
         } else {
             holder.mTitle.setText(chatList.get(position).getChatId());
+        }
+
+        if(!chatList.get(position).getChatIcon().isEmpty()) {
+            holder.mIcon.setImageURI(chatList.get(position).getChatIcon());
+            holder.mIcon.setBackground(null);
         }
 
         holder.mLayout.setOnClickListener(new View.OnClickListener() {
@@ -80,11 +94,13 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
     }
 
     static public class ChatListViewHolder extends RecyclerView.ViewHolder {
+        public SimpleDraweeView mIcon;
         public TextView mTitle;
         public LinearLayout mLayout;
 
         public ChatListViewHolder(View view) {
             super(view);
+            mIcon = view.findViewById(R.id.chatIcon);
             mTitle = view.findViewById(R.id.title);
             mLayout = view.findViewById(R.id.layout);
         }

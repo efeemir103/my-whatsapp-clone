@@ -17,4 +17,6 @@
     <string name="dialog_chat_name_title">Name for New Chat Room</string>
     <string name="cancel">Cancel</string>
     <string name="agree">Agree</string>
+    <string name="chat_icon_picture">Chat Icon Picture</string>
+    <string name="media">Media</string>
 </resources>

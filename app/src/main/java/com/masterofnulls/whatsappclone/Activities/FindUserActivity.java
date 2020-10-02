@@ -5,13 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -19,12 +22,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.masterofnulls.whatsappclone.R;
 import com.masterofnulls.whatsappclone.User.User;
 import com.masterofnulls.whatsappclone.User.UserListAdapter;
+import com.masterofnulls.whatsappclone.Utils.SendNotification;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FindUserActivity extends AppCompatActivity {
 
@@ -50,7 +58,18 @@ public class FindUserActivity extends AppCompatActivity {
         mCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createChat();
+                int n = 0;
+                for(User user: userList) {
+                    if(user.getSelected() && !user.getUid().equals(FirebaseAuth.getInstance().getUid())) {
+                        n++;
+                    }
+                }
+
+                if(n <= 1) {
+                    createChat();
+                } else {
+                    createGroupChat();
+                }
             }
         });
 
@@ -58,8 +77,61 @@ public class FindUserActivity extends AppCompatActivity {
         getContactList();
     }
 
-    private void createChat() {
-        String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+    int PICK_IMAGE_INTENT = 1;
+    String imageURI = "";
+    private void createGroupChat() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture for the Group Chat"), PICK_IMAGE_INTENT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK) {
+            if(requestCode == PICK_IMAGE_INTENT) {
+                if(data.getClipData() == null) {
+                    imageURI = data.getData().toString();
+                } else {
+                    for(int i = 0; i < data.getClipData().getItemCount(); i++) {
+                        imageURI = data.getClipData().getItemAt(i).getUri().toString();
+                    }
+                }
+
+                uploadIcon(imageURI);
+            }
+        }
+    }
+
+    private void uploadIcon(String imageURI) {
+        if(!imageURI.isEmpty()) {
+            final DatabaseReference newChatDB = FirebaseDatabase.getInstance().getReference().child("chat").push();
+            String chatID =  newChatDB.getKey();
+            final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("icon").child(chatID);
+            UploadTask uploadTask = filePath.putFile(Uri.parse(imageURI));
+
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(final Uri uri) {
+                            newChatDB.child("info").updateChildren(new HashMap<String, Object>(){
+                                {
+                                    put("icon", uri);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            createChat(newChatDB.getKey());
+        }
+    }
+
+    private void createChat(String key) {
 
         DatabaseReference chatInfoDB = FirebaseDatabase.getInstance().getReference().child("chat").child(key).child("info");
         DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
@@ -82,6 +154,11 @@ public class FindUserActivity extends AppCompatActivity {
             chatInfoDB.updateChildren(newChatMap);
             userDB.child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
         }
+    }
+
+    private void createChat() {
+        String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+        createChat(key);
     }
 
     private void getContactList() {

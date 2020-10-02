@@ -1,15 +1,17 @@
 package com.masterofnulls.whatsappclone.Message;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.masterofnulls.whatsappclone.R;
 import com.masterofnulls.whatsappclone.User.User;
 import com.stfalcon.frescoimageviewer.ImageViewer;
@@ -20,7 +22,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     ArrayList<Message> messageList;
     ArrayList<User> userList;
 
-    public MessageListAdapter(ArrayList<Message> messageList, ArrayList<User> userList) {
+    Context context;
+
+    public MessageListAdapter(Context context, ArrayList<Message> messageList, ArrayList<User> userList) {
+        this.context = context;
         this.messageList = messageList;
         this.userList = userList;
     }
@@ -50,8 +55,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             holder.mSenderPhone.setText(user.getPhone());
         }
 
-        if(messageList.get(holder.getAdapterPosition()).getMediaURLList().isEmpty()) {
+        if(messageList.get(position).getMediaURLList().isEmpty()) {
             holder.mViewMedia.setVisibility(View.GONE);
+        } else {
+            holder.mViewMedia.setImageURI(messageList.get(position).getMediaURLList().get(0));
+        }
+
+        if(messageList.get(position).getSenderId().equals(FirebaseAuth.getInstance().getUid())) {
+            holder.mMessageLeftMargin.setLayoutParams(new LinearLayout.LayoutParams(
+                    0,
+                    0,
+                    1
+            ));
         }
 
         holder.mViewMedia.setOnClickListener(new View.OnClickListener() {
@@ -78,13 +93,15 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     public int getItemCount() { return messageList.size(); }
 
     static public class MessageListViewHolder extends RecyclerView.ViewHolder {
+        public View mMessageLeftMargin;
         public TextView mMessage, mSenderName, mSenderPhone;
-        public ImageButton mViewMedia;
+        public SimpleDraweeView mViewMedia;
         public LinearLayout mLayout;
 
         public MessageListViewHolder(View view) {
             super(view);
             mLayout = view.findViewById(R.id.layout);
+            mMessageLeftMargin = view.findViewById(R.id.messageLeftMargin);
             mMessage = view.findViewById(R.id.message);
             mSenderName = view.findViewById(R.id.senderName);
             mSenderPhone = view.findViewById(R.id.senderPhone);

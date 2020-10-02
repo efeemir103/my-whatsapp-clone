@@ -132,10 +132,19 @@ public class MainPageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists()) {
-                    String chatId = "";
+                    String chatId = "", chatIcon = "";
 
                     if(snapshot.child("id").getValue() != null) {
                         chatId = snapshot.child("id").getValue().toString();
+                    }
+
+                    if(snapshot.child("icon").getValue() != null) {
+                        chatIcon = snapshot.child("icon").getValue().toString();
+                        for(Chat chat: chatList) {
+                            if(chat.getChatId().equals(chatId)) {
+                                chat.setChatIcon(chatIcon);
+                            }
+                        }
                     }
 
                     for(DataSnapshot userSnapshot: snapshot.child("users").getChildren()) {
@@ -197,7 +206,7 @@ public class MainPageActivity extends AppCompatActivity {
         mChatList.setHasFixedSize(false);
         mChatListLayoutManager = new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false);
         mChatList.setLayoutManager(mChatListLayoutManager);
-        mChatListAdapter = new ChatListAdapter(chatList);
+        mChatListAdapter = new ChatListAdapter(getApplicationContext(), chatList);
         mChatList.setAdapter(mChatListAdapter);
     }
 
