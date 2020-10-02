@@ -8,5 +8,5 @@ This is an whatsapp clone created from the tutorial on youtube (links below), Th
 
 ## Gallery:
 
-[MainPage](https://github.com/efeemir103/my-whatsapp-clone/blob/master/App%20Showcase%20Images/mainpage.png)
-[Chat](https://github.com/efeemir103/my-whatsapp-clone/blob/master/App%20Showcase%20Images/chat.png)
+![MainPage][https://github.com/efeemir103/my-whatsapp-clone/blob/master/App%20Showcase%20Images/mainpage.png]
+![Chat][https://github.com/efeemir103/my-whatsapp-clone/blob/master/App%20Showcase%20Images/chat.png]
